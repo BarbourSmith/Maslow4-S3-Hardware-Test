@@ -268,21 +268,21 @@ void loop() {
   delay(300);
   digitalWrite(35, LOW);
 
-  // //Encoder testing
-  // scanPorts();
+  //Encoder testing
+  scanPorts();
 
-  // readFromEncoder(TLEncoderLine);
-  // readFromEncoder(TREncoderLine);
-  // readFromEncoder(BLEncoderLine);
-  // readFromEncoder(BREncoderLine);
+  readFromEncoder(TLEncoderLine);
+  readFromEncoder(TREncoderLine);
+  readFromEncoder(BLEncoderLine);
+  readFromEncoder(BREncoderLine);
 
-  // //Motor testing
-  // Serial.println("Testing top left motor");
-  // testMotor(tlIn1Channel, tlIn2Channel, tlADCPin);
-  // Serial.println("Testing top right motor");
-  // testMotor(trIn1Channel, trIn2Channel, trADCPin);
-  // Serial.println("Testing bottom left motor");
-  // testMotor(blIn1Channel, blIn2Channel, blADCPin);
-  // Serial.println("Testing bottom right motor");
-  // testMotor(brIn1Channel, brIn2Channel, brADCPin);
+  //Motor testing
+  Serial.println("Testing top left motor");
+  testMotor(tlIn1Channel, tlIn2Channel, tlADCPin);
+  Serial.println("Testing top right motor");
+  testMotor(trIn1Channel, trIn2Channel, trADCPin);
+  Serial.println("Testing bottom left motor");
+  testMotor(blIn1Channel, blIn2Channel, blADCPin);
+  Serial.println("Testing bottom right motor");
+  testMotor(brIn1Channel, brIn2Channel, brADCPin);
 }
