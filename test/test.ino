@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <SPI.h>
 #include <SD.h>
+#include <AS5600.h> //https://github.com/RobTillaart/AS5600
 
 #define SDMISO 13
 #define SDMOSI 11
@@ -15,6 +16,17 @@ SPIClass * spi = NULL;
 #include "Wire.h"
 
 #define TCAADDR 0x70
+
+#define TLEncoderLine 0
+#define TREncoderLine 2
+#define BLEncoderLine 1
+#define BREncoderLine 3
+
+
+AS5600 encoderTL;
+AS5600 encoderTR;
+AS5600 encoderBL;
+AS5600 encoderBR;
 
 void tcaselect(uint8_t i) {
   if (i > 7) return;
@@ -43,14 +55,72 @@ void scanPorts(){
   Serial.println("\ndone");
 }
 
+void readFromEncoder(int encoderNumber){
+  tcaselect(encoderNumber);
+  
+  switch(encoderNumber){
+    case TLEncoderLine:
+      if(encoderTL.isConnected()){
+        Serial.println(encoderTL.readAngle());
+      } 
+      else{
+        Serial.println("TL Encoder not connected");
+      }
+      break;
+    case TREncoderLine:
+      if(encoderTR.isConnected()){
+        Serial.println(encoderTR.readAngle());
+      } 
+      else{
+        Serial.println("TR Encoder not connected");
+      }
+      break;
+    case BLEncoderLine:
+      if(encoderBL.isConnected()){
+        Serial.println(encoderBL.readAngle());
+      } 
+      else{
+        Serial.println("BL Encoder not connected");
+      }
+      break;
+    case BREncoderLine:
+      if(encoderBR.isConnected()){
+        Serial.println(encoderBR.readAngle());
+      } 
+      else{
+        Serial.println("BR Encoder not connected");
+      }
+      break;
+  }
+
+
+}
+
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
   pinMode(14, OUTPUT);
   pinMode(35, OUTPUT);
 
-  //Test the encoder connection
+  //Begin the encoder I2C
   Wire.begin(SDA, SCL);
+
+  delay(300); //Let serial begin
+
+  //Begin the encoders
+  Serial.println("Connecting the encoders (TL, TR, BL, BR)");
+  tcaselect(TLEncoderLine);
+  encoderTL.begin();
+  Serial.println(encoderTL.isConnected());
+  tcaselect(TREncoderLine);
+  encoderTR.begin();
+  Serial.println(encoderTR.isConnected());
+  tcaselect(BLEncoderLine);
+  encoderBL.begin();
+  Serial.println(encoderBL.isConnected());
+  tcaselect(BREncoderLine);
+  encoderBR.begin();
+  Serial.println(encoderBR.isConnected());
 
   //Test the SD Card connection
   spi = new SPIClass();
@@ -76,4 +146,9 @@ void loop() {
   digitalWrite(35, LOW);
 
   scanPorts();
+
+  readFromEncoder(TLEncoderLine);
+  readFromEncoder(TREncoderLine);
+  readFromEncoder(BLEncoderLine);
+  readFromEncoder(BREncoderLine);
 }
