@@ -3,7 +3,7 @@
 #include <SD.h>
 #include <AS5600.h> //https://github.com/RobTillaart/AS5600
 #include "sdTesting.h"
-#include <DCMotor.h>
+#include <MotorUnit.h>
 
 #define SDMISO 13
 #define SDMOSI 11
@@ -51,13 +51,12 @@
 #define brIn2Channel 7
 #define brADCPin 7
 
+//This function is used to replace webprint
+void fakePrint(uint8_t client, const char* format, ...){
 
-AS5600 encoderTL;
-AS5600 encoderTR;
-AS5600 encoderBL;
-AS5600 encoderBR;
+}
 
-DCMotor tlMotor;
+MotorUnit axisTL(tlIn1Pin, tlIn2Pin, tlADCPin, TLEncoderLine, tlIn1Channel, tlIn2Channel, &fakePrint);
 
 void tcaselect(uint8_t i) {
   if (i > 7) return;
@@ -90,66 +89,49 @@ void readFromEncoder(int encoderNumber){
   tcaselect(encoderNumber);
   
   switch(encoderNumber){
-    case TLEncoderLine:
-      if(encoderTL.isConnected()){
-        Serial.println(encoderTL.getCumulativePosition()/4096.0);
-      } 
-      else{
-        Serial.println("TL Encoder not connected");
-      }
-      break;
-    case TREncoderLine:
-      if(encoderTR.isConnected()){
-        Serial.println(encoderTR.getCumulativePosition()/4096.0);
-      } 
-      else{
-        Serial.println("TR Encoder not connected");
-      }
-      break;
-    case BLEncoderLine:
-      if(encoderBL.isConnected()){
-        Serial.println(encoderBL.getRevolutions());
-      } 
-      else{
-        Serial.println("BL Encoder not connected");
-      }
-      break;
-    case BREncoderLine:
-      if(encoderBR.isConnected()){
-        Serial.println(encoderBR.getRevolutions());
-      } 
-      else{
-        Serial.println("BR Encoder not connected");
-      }
-      break;
+  //   case TLEncoderLine:
+  //     if(encoderTL.isConnected()){
+  //       Serial.println(encoderTL.getCumulativePosition()/4096.0);
+  //     } 
+  //     else{
+  //       Serial.println("TL Encoder not connected");
+  //     }
+  //     break;
+  //   case TREncoderLine:
+  //     if(encoderTR.isConnected()){
+  //       Serial.println(encoderTR.getCumulativePosition()/4096.0);
+  //     } 
+  //     else{
+  //       Serial.println("TR Encoder not connected");
+  //     }
+  //     break;
+  //   case BLEncoderLine:
+  //     if(encoderBL.isConnected()){
+  //       Serial.println(encoderBL.getRevolutions());
+  //     } 
+  //     else{
+  //       Serial.println("BL Encoder not connected");
+  //     }
+  //     break;
+  //   case BREncoderLine:
+  //     if(encoderBR.isConnected()){
+  //       Serial.println(encoderBR.getRevolutions());
+  //     } 
+  //     else{
+  //       Serial.println("BR Encoder not connected");
+  //     }
+  //     break;
   }
 }
 
-void testMotor(int in1Channel, int in2Channel, int adcPin){
-  Serial.println(analogRead(adcPin));
-  ledcWrite(in1Channel, 500); //Half speed one way
-  ledcWrite(in2Channel, 0);
-  delay(500);
-  Serial.println(analogRead(adcPin));
-  delay(500);
-
-  ledcWrite(in1Channel, 0); //Stop
-  ledcWrite(in2Channel, 0);
-  delay(300);
-
-  ledcWrite(in1Channel, 0); //Half speed the other way
-  ledcWrite(in2Channel, 500);
-  delay(500);
-  Serial.println(analogRead(adcPin));
-  delay(500);
-
-  ledcWrite(in1Channel, 0); //Stop
-  ledcWrite(in2Channel, 0);
+void testMotor(){
+  Serial.println("Testing motor");
 }
 
 void setup() {
-  // put your setup code here, to run once:
+  //Serial setup
   Serial.begin(115200);
+  //These are used for the SD card
   pinMode(14, OUTPUT);
   pinMode(35, OUTPUT);
 
@@ -161,59 +143,7 @@ void setup() {
 
   delay(300); //Let serial begin
 
-  //Begin the encoders
-  Serial.println("Connecting the encoders (TL, TR, BL, BR)");
-  tcaselect(TLEncoderLine);
-  encoderTL.begin();
-  Serial.println(encoderTL.isConnected());
-  tcaselect(TREncoderLine);
-  encoderTR.begin();
-  Serial.println(encoderTR.isConnected());
-  tcaselect(BLEncoderLine);
-  encoderBL.begin();
-  Serial.println(encoderBL.isConnected());
-  tcaselect(BREncoderLine);
-  encoderBR.begin();
-  Serial.println(encoderBR.isConnected());
   
-
-  tlMotor.begin(tlIn1Pin, tlIn2Pin, tlADCPin, tlIn1Channel, tlIn2Channel);
-  //Setup the motor controllers
-  // ledcSetup(tlIn1Channel, motorPWMFreq, motorPWMRes);  // configure PWM functionalities...this uses timer 0 (channel, freq, resolution)
-  // ledcAttachPin(tlIn1Pin, tlIn1Channel);  // attach the channel to the GPIO to be controlled
-  // ledcWrite(tlIn1Channel, 0); //Turn the fan off
-
-  // ledcSetup(tlIn2Channel, motorPWMFreq, motorPWMRes);
-  // ledcAttachPin(tlIn2Pin, tlIn2Channel);
-  // ledcWrite(tlIn2Channel, 0);
-
-  // ledcSetup(trIn1Channel, motorPWMFreq, motorPWMRes);
-  // ledcAttachPin(trIn1Pin, trIn1Channel);
-  // ledcWrite(trIn1Channel, 0);
-
-  // ledcSetup(trIn2Channel, motorPWMFreq, motorPWMRes);
-  // ledcAttachPin(trIn2Pin, trIn2Channel);
-  // ledcWrite(trIn2Channel, 0);
-
-  // ledcSetup(blIn1Channel, motorPWMFreq, motorPWMRes);
-  // ledcAttachPin(blIn1Pin, blIn1Channel);
-  // ledcWrite(blIn1Channel, 0);
-
-  // ledcSetup(blIn2Channel, motorPWMFreq, motorPWMRes);
-  // ledcAttachPin(blIn2Pin, blIn2Channel);
-  // ledcWrite(blIn2Channel, 0);
-
-  // ledcSetup(brIn1Channel, motorPWMFreq, motorPWMRes);
-  // ledcAttachPin(brIn1Pin, brIn1Channel);
-  // ledcWrite(brIn1Channel, 0);
-
-  // ledcSetup(brIn2Channel, motorPWMFreq, motorPWMRes);
-  // ledcAttachPin(brIn2Pin, brIn2Channel);
-  // ledcWrite(brIn2Channel, 0);
-
-  //Test the SD Card connection
-  //spi = new SPIClass();
-  //spi->begin(SDCS, SDMISO, SDMOSI, SDCS);
 
   if (!SD.begin()) {
     Serial.println("SD initialization failed!");
@@ -263,7 +193,6 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   Serial.println("Loop");
-  Serial.println(MOSI);
 
   //LED testing
   digitalWrite(14, HIGH);
@@ -276,20 +205,4 @@ void loop() {
   //Encoder testing
   scanPorts();
 
-  readFromEncoder(TLEncoderLine);
-  while(true){
-    readFromEncoder(TREncoderLine);
-    delay(10);
-  }
-  readFromEncoder(BLEncoderLine);
-  readFromEncoder(BREncoderLine);
-
-  //Motor testing
-  Serial.println("Testing top left motor");
-  tlMotor.runAtSpeed(FORWARD, 500);
-  delay(2000);
-  tlMotor.stop();
-  delay(2000);
-  tlMotor.runAtSpeed(BACKWARD, 500);
-  delay(2000);
 }
