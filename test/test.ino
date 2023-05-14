@@ -3,6 +3,7 @@
 #include <SD.h>
 #include <AS5600.h> //https://github.com/RobTillaart/AS5600
 #include "sdTesting.h"
+#include <DCMotor.h>
 
 #define SDMISO 13
 #define SDMOSI 11
@@ -56,6 +57,8 @@ AS5600 encoderTR;
 AS5600 encoderBL;
 AS5600 encoderBR;
 
+DCMotor tlMotor;
+
 void tcaselect(uint8_t i) {
   if (i > 7) return;
  
@@ -89,7 +92,7 @@ void readFromEncoder(int encoderNumber){
   switch(encoderNumber){
     case TLEncoderLine:
       if(encoderTL.isConnected()){
-        Serial.println(encoderTL.readAngle());
+        Serial.println(encoderTL.getCumulativePosition()/4096.0);
       } 
       else{
         Serial.println("TL Encoder not connected");
@@ -97,7 +100,7 @@ void readFromEncoder(int encoderNumber){
       break;
     case TREncoderLine:
       if(encoderTR.isConnected()){
-        Serial.println(encoderTR.readAngle());
+        Serial.println(encoderTR.getCumulativePosition()/4096.0);
       } 
       else{
         Serial.println("TR Encoder not connected");
@@ -105,7 +108,7 @@ void readFromEncoder(int encoderNumber){
       break;
     case BLEncoderLine:
       if(encoderBL.isConnected()){
-        Serial.println(encoderBL.readAngle());
+        Serial.println(encoderBL.getRevolutions());
       } 
       else{
         Serial.println("BL Encoder not connected");
@@ -113,7 +116,7 @@ void readFromEncoder(int encoderNumber){
       break;
     case BREncoderLine:
       if(encoderBR.isConnected()){
-        Serial.println(encoderBR.readAngle());
+        Serial.println(encoderBR.getRevolutions());
       } 
       else{
         Serial.println("BR Encoder not connected");
@@ -173,38 +176,40 @@ void setup() {
   encoderBR.begin();
   Serial.println(encoderBR.isConnected());
   
+
+  tlMotor.begin(tlIn1Pin, tlIn2Pin, tlADCPin, tlIn1Channel, tlIn2Channel);
   //Setup the motor controllers
-  ledcSetup(tlIn1Channel, motorPWMFreq, motorPWMRes);  // configure PWM functionalities...this uses timer 0 (channel, freq, resolution)
-  ledcAttachPin(tlIn1Pin, tlIn1Channel);  // attach the channel to the GPIO to be controlled
-  ledcWrite(tlIn1Channel, 0); //Turn the fan off
+  // ledcSetup(tlIn1Channel, motorPWMFreq, motorPWMRes);  // configure PWM functionalities...this uses timer 0 (channel, freq, resolution)
+  // ledcAttachPin(tlIn1Pin, tlIn1Channel);  // attach the channel to the GPIO to be controlled
+  // ledcWrite(tlIn1Channel, 0); //Turn the fan off
 
-  ledcSetup(tlIn2Channel, motorPWMFreq, motorPWMRes);
-  ledcAttachPin(tlIn2Pin, tlIn2Channel);
-  ledcWrite(tlIn2Channel, 0);
+  // ledcSetup(tlIn2Channel, motorPWMFreq, motorPWMRes);
+  // ledcAttachPin(tlIn2Pin, tlIn2Channel);
+  // ledcWrite(tlIn2Channel, 0);
 
-  ledcSetup(trIn1Channel, motorPWMFreq, motorPWMRes);
-  ledcAttachPin(trIn1Pin, trIn1Channel);
-  ledcWrite(trIn1Channel, 0);
+  // ledcSetup(trIn1Channel, motorPWMFreq, motorPWMRes);
+  // ledcAttachPin(trIn1Pin, trIn1Channel);
+  // ledcWrite(trIn1Channel, 0);
 
-  ledcSetup(trIn2Channel, motorPWMFreq, motorPWMRes);
-  ledcAttachPin(trIn2Pin, trIn2Channel);
-  ledcWrite(trIn2Channel, 0);
+  // ledcSetup(trIn2Channel, motorPWMFreq, motorPWMRes);
+  // ledcAttachPin(trIn2Pin, trIn2Channel);
+  // ledcWrite(trIn2Channel, 0);
 
-  ledcSetup(blIn1Channel, motorPWMFreq, motorPWMRes);
-  ledcAttachPin(blIn1Pin, blIn1Channel);
-  ledcWrite(blIn1Channel, 0);
+  // ledcSetup(blIn1Channel, motorPWMFreq, motorPWMRes);
+  // ledcAttachPin(blIn1Pin, blIn1Channel);
+  // ledcWrite(blIn1Channel, 0);
 
-  ledcSetup(blIn2Channel, motorPWMFreq, motorPWMRes);
-  ledcAttachPin(blIn2Pin, blIn2Channel);
-  ledcWrite(blIn2Channel, 0);
+  // ledcSetup(blIn2Channel, motorPWMFreq, motorPWMRes);
+  // ledcAttachPin(blIn2Pin, blIn2Channel);
+  // ledcWrite(blIn2Channel, 0);
 
-  ledcSetup(brIn1Channel, motorPWMFreq, motorPWMRes);
-  ledcAttachPin(brIn1Pin, brIn1Channel);
-  ledcWrite(brIn1Channel, 0);
+  // ledcSetup(brIn1Channel, motorPWMFreq, motorPWMRes);
+  // ledcAttachPin(brIn1Pin, brIn1Channel);
+  // ledcWrite(brIn1Channel, 0);
 
-  ledcSetup(brIn2Channel, motorPWMFreq, motorPWMRes);
-  ledcAttachPin(brIn2Pin, brIn2Channel);
-  ledcWrite(brIn2Channel, 0);
+  // ledcSetup(brIn2Channel, motorPWMFreq, motorPWMRes);
+  // ledcAttachPin(brIn2Pin, brIn2Channel);
+  // ledcWrite(brIn2Channel, 0);
 
   //Test the SD Card connection
   //spi = new SPIClass();
@@ -272,17 +277,19 @@ void loop() {
   scanPorts();
 
   readFromEncoder(TLEncoderLine);
-  readFromEncoder(TREncoderLine);
+  while(true){
+    readFromEncoder(TREncoderLine);
+    delay(10);
+  }
   readFromEncoder(BLEncoderLine);
   readFromEncoder(BREncoderLine);
 
   //Motor testing
   Serial.println("Testing top left motor");
-  testMotor(tlIn1Channel, tlIn2Channel, tlADCPin);
-  Serial.println("Testing top right motor");
-  testMotor(trIn1Channel, trIn2Channel, trADCPin);
-  Serial.println("Testing bottom left motor");
-  testMotor(blIn1Channel, blIn2Channel, blADCPin);
-  Serial.println("Testing bottom right motor");
-  testMotor(brIn1Channel, brIn2Channel, brADCPin);
+  tlMotor.runAtSpeed(FORWARD, 500);
+  delay(2000);
+  tlMotor.stop();
+  delay(2000);
+  tlMotor.runAtSpeed(BACKWARD, 500);
+  delay(2000);
 }
