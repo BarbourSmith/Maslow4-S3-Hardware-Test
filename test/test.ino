@@ -143,7 +143,8 @@ void setup() {
 
   delay(300); //Let serial begin
 
-  
+  //Begin the axis
+  axisTL.begin();
 
   if (!SD.begin()) {
     Serial.println("SD initialization failed!");
@@ -203,6 +204,16 @@ void loop() {
   digitalWrite(35, LOW);
 
   //Encoder testing
-  scanPorts();
+  scanPorts(); //Scans the I2C multiplexer to look for the connection to the encoders
+
+  //Read from the encoders
+  Serial.print("Reading position from motorUnit: ");
+  Serial.println(axisTL.getPosition());
+
+  //Test the everything
+  axisTL.test();
+  Serial.println("Test finished");
+
+  delay(15000);
 
 }
